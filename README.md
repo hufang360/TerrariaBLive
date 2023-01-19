@@ -1,13 +1,15 @@
 # TerrariaBLive
 
-一个可以在直播玩泰拉瑞亚时，可以让观众与主播互动的插件。idea和原作者是：ArsiIksait。我在额外增加了指令开关和配置文件功能。
+一个可以在直播玩泰拉瑞亚时，可以让观众与主播互动的插件，目前插件会把弹幕内容广播给服里的玩家。
 
-插件目前能很好地把弹幕文本，广播给服里的玩家。
+这个插件的idea和原作者是 @ArsiIksait 。我在此基础上增加了指令开关和配置文件功能。
+
+
 
 
 ## 插件安装
 
-1、将`TerrariaBLive.dll`、`TerrariaBLive.json`、`OpenBLive.dll`、`Websocket.Client.dll` 和 `System.Reactive`这5个文件拷贝到tshock服务器的 “ServerPlugins”目录下。（下载地址：[TerrariaBLive-v0.0.3.zip](https://gitee.com/hufang360/TerrariaBLive/releases/download/v0.0.3/TerrariaBLive-v0.0.3.zip)）
+1、将`TerrariaBLive.dll`、`TerrariaBLive.json`、`OpenBLive.dll`、`Websocket.Client.dll` 和 `System.Reactive`这5个文件拷贝到tshock服务器的 “ServerPlugins”目录下。（下载地址：[TerrariaBLive-v0.0.3.zip](https://github.com/hufang360/TerrariaBLive/releases/download/v0.0.3/TerrariaBLive-v0.0.3.zip)）
 
 2、用记事本等软件打开“TerrariaBLive.json”文件，按里面提示去获得/申请对应信息，将申请到的信息填进配置文件里。
 
@@ -48,3 +50,17 @@
 | /blive | blive | /group addperm owner blive  |
 
 备注：一般来说，服主和超级管理员拥有全部的权限，无需授权，如果你所在的组是owner组可以按照上面的授权示意来。
+
+## 开发
+本项目只上传了一半代码，请前往[bilibili开放平台](https://open-live.bilibili.com/document/doc&tool/cSDK.html)下载b站官方的sdk。
+
+部分文件结构：
+```
+├─OpenBLive
+│  ├─OpenBLive.csproj
+
+├─TerrariaBLive
+│  ├─TerrariaBLive.csproj
+
+├─TerrariaBLive.sln
+```
