@@ -4,7 +4,6 @@ using OpenBLive.Client.Data;
 using OpenBLive.Runtime;
 using OpenBLive.Runtime.Data;
 using OpenBLive.Runtime.Utilities;
-using PluginData;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
@@ -16,54 +15,18 @@ namespace TerrariaBLive
     {
         public override string Name => "TerrariaBLive";
         public override string Description => "一个可以在直播玩泰拉瑞亚时，可以让观众与主播互动的插件。";
-        public override string Author => "ArsiIksait";
+        public override string Author => "ArsiIksait & hufang360";
         public override Version Version => new(0, 0, 3);
 
-
-        static string code = "";
-        static string appId = "";
         static string gameId = string.Empty;
         readonly IBApiClient bApiClient = new BApiClient();
         int ErrorCode = 0;
-
-        Dictionary<int, string> ErrorCodeDict = new() {
-        {4000,"参数错误。请检查必填参数，参数大小限制"},
-        {4001,"应用无效。请检查header的x-bili-accesskeyid是否为空，或者有效"},
-        {4002,"签名异常。请检查header的Authorization"},
-        {4003,"请求过期。请检查header的x-bili-timestamp"},
-        {4004,"重复请求。请检查header的x-bili-nonce"},
-        {4005,"签名method异常。请检查header的x-bili-signature-method"},
-        {4006,"版本异常。请检查header的x-bili-version"},
-        {4007,"IP白名单限制。请确认请求服务器是否在报备的白名单内"},
-        {4008,"权限异常。请确认接口权限"},
-        {4009,"接口访问限制。请确认接口权限及请求频率"},
-        {4010,"接口不存在。请确认请求接口url"},
-        {4011,"Content。Type不为application/json	请检查header的Content-Type"},
-        {4012,"MD5校验失败。请检查header的x-bili-content-md5"},
-        {4013,"Accept不为application。json	请检查header的Accept"},
-        {5000,"服务异常。请联系B站对接同学"},
-        {5001,"请求超时。请求超时"},
-        {5002,"内部错误。请联系B站对接同学"},
-        {5003,"配置错误。请联系B站对接同学"},
-        {5004,"房间白名单限制。请联系B站对接同学"},
-        {5005,"房间黑名单限制。请联系B站对接同学"},
-        {6000,"验证码错误。验证码校验失败"},
-        {6001,"手机号码错误。检查手机号码"},
-        {6002,"验证码已过期。验证码超过规定有效期"},
-        {6003,"验证码频率限制。检查获取验证码的频率"},
-        {7000,"不在游戏内。当前房间未进行互动游戏"},
-        {7001,"请求冷却期。上个游戏正在结算中，建议10秒后进行重试"},
-        {7002,"房间重复游戏。当前房间正在进行游戏,无法开启下一局互动游戏"},
-        {7003,"心跳过期。当前game_id错误或互动游戏已关闭"},
-        {7004,"批量心跳超过最大值。批量心跳单次最大值为200"},
-        {7005,"批量心跳ID重复。批量心跳game_id存在重复,请检查参数"},
-        {7007,"身份码错误。请检查身份码是否正确"},
-        {8002,"项目无权限访问。确认项目ID是否正确"},
-        };
         bool isOpen = false;
         InteractivePlayHeartBeat m_PlayHeartBeat;
         WebSocketBLiveClient m_WebSocketBLiveClient;
         AppStartInfo startInfo;
+
+        public Config _config;
 
         public Plugin(Main game) : base(game) { }
 
@@ -73,13 +36,11 @@ namespace TerrariaBLive
             Commands.ChatCommands.Add(new Command(perm, BLiveCommand, "blive", "danmu") { HelpText = "弹幕姬" });
 
             var configFile = Path.Combine(ServerApi.ServerPluginsDirectoryPath, "TerrariaBLive.json");
-            var config = Config.Load(configFile);
-            code = config.code;
-            appId = config.appId;
+            _config = Config.Load(configFile);
 
             BApi.isTestEnv = false;
-            SignUtility.accessKeyId = config.accessKeyId;
-            SignUtility.accessKeySecret = config.accessKeySecret;
+            SignUtility.accessKeyId = _config.accessKeyId;
+            SignUtility.accessKeySecret = _config.accessKeySecret;
         }
 
         /// <summary>
@@ -99,7 +60,7 @@ namespace TerrariaBLive
                     m_WebSocketBLiveClient.OnGift -= OnGift;
                     m_WebSocketBLiveClient.Disconnect();
                     m_WebSocketBLiveClient.Dispose();
-                    await bApiClient.EndInteractivePlay(appId, gameId!);
+                    await bApiClient.EndInteractivePlay(_config.appId, gameId!);
                 }
             }
             base.Dispose(disposing);
@@ -150,9 +111,9 @@ namespace TerrariaBLive
                 case "status":
                     if (ErrorCode != 0)
                     {
-                        var text2 = "";
-                        if (ErrorCodeDict.ContainsKey(ErrorCode))
-                            text2 = $"错误码提示：{ErrorCodeDict[ErrorCode]}";
+                        var text2 = ErrorCodeMapping.GetDesc(ErrorCode);
+                        if (!string.IsNullOrEmpty(text2))
+                            text2 = $"错误码提示：{text2}";
                         text = $"未正常开启, gameID:{gameId}, code:{ErrorCode} {text2}";
                         TShock.Log.ConsoleInfo(text);
                         args.Player.SendInfoMessage(text);
@@ -195,7 +156,7 @@ namespace TerrariaBLive
             args.Player.SendInfoMessage($"正在开启……");
 
             //开启互动玩法
-            startInfo = await bApiClient.StartInteractivePlay(code, appId);
+            startInfo = await bApiClient.StartInteractivePlay(_config.code, _config.appId);
             //确认游戏正常开启
             if (startInfo?.Code != 0)
             {
@@ -256,7 +217,7 @@ namespace TerrariaBLive
                 m_WebSocketBLiveClient.Disconnect();
                 m_WebSocketBLiveClient.Dispose();
 
-                await bApiClient.EndInteractivePlay(appId, gameId!);
+                await bApiClient.EndInteractivePlay(_config.appId, gameId!);
             }
             else
             {
@@ -285,18 +246,22 @@ namespace TerrariaBLive
             TShock.Log.ConsoleInfo($"[{Name}]: {gift.userName} 赠送了 {gift.giftName}*{gift.giftNum}");
             TShock.Utils.Broadcast($"{gift.userName} 赠送了 {gift.giftName}*{gift.giftNum}", Color.YellowGreen);
 
-            int bossId = (int)Gift.GetBoss(gift.giftName);
-            if (bossId != 0)
+            // 读取配置文件，匹配到礼物就执行指定指令
+            foreach (var data in _config.gifts)
             {
-                if (bossId == 1)
+                if (data.giftName == gift.giftName && gift.giftNum >= data.giftNum)
                 {
-                    ExecuteCommand($"/sm {(int)Boss.双子魔眼}");
-                    ExecuteCommand($"/sm {(int)Boss.毁灭者}");
-                    ExecuteCommand($"/sm {(int)Boss.机械骷髅王}");
-                }
-                else
-                {
-                    ExecuteCommand($"/sm {bossId}");
+                    // 合并 data.cmds  和 data.cmd
+                    List<string> cmds = data.cmds.ToList();
+                    cmds.Insert(0, data.cmd);
+                    foreach (var cmd in data.cmds)
+                    {
+                        if (!string.IsNullOrEmpty(cmd))
+                        {
+                            ExecuteCommand(cmd);
+                        }
+                    }
+                    break;
                 }
             }
         }
