@@ -1,4 +1,4 @@
-# TShockSearch
+# TerrariaBLive
 
 一个可以在直播玩泰拉瑞亚时，可以让观众与主播互动的插件。idea和原作者是：ArsiIksait。我在额外增加了指令开关和配置文件功能。
 
@@ -7,7 +7,7 @@
 
 ## 插件安装
 
-1、将`TerrariaBLive.dll`、`TerrariaBLive.json`、`OpenBLive.dll`、`Websocket.Client.dll` 和 `System.Reactive`这5个文件拷贝到tshock服务器的 “ServerPlugins”目录下。
+1、将`TerrariaBLive.dll`、`TerrariaBLive.json`、`OpenBLive.dll`、`Websocket.Client.dll` 和 `System.Reactive`这5个文件拷贝到tshock服务器的 “ServerPlugins”目录下。（下载地址：[TerrariaBLive-v0.0.3.zip](https://gitee.com/hufang360/TerrariaBLive/releases/download/v0.0.3/TerrariaBLive-v0.0.3.zip)）
 
 2、用记事本等软件打开“TerrariaBLive.json”文件，按里面提示去获得/申请对应信息，将申请到的信息填进配置文件里。
 
@@ -35,7 +35,7 @@
 
 
 ## 指令
-```
+```shell
 /blive help，指令帮助
 /blive status，查询功能状态
 /blive on，开启弹幕互动功能
@@ -46,4 +46,4 @@
 | 指令 | 权限名 | 授权示意 |
 | --- | --- | --- |
 | /blive | blive | /group addperm owner blive  |
-备注：一般来说，服主和超级管理员拥有全部的权限，无需授权，如果你所在的组是owner组可以按照上面的授权示意来。不建议把指令权限授权给普通玩家（default），因为这意味着全部人都能开关弹幕功能。
+备注：一般来说，服主和超级管理员拥有全部的权限，无需授权，如果你所在的组是owner组可以按照上面的授权示意来。
